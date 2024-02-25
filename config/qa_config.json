@@ -1,5 +1,6 @@
 {
-  "login_url": "https://app.testomat.io/users/sign_in",
+  "base_url": "https://app.testomat.io",
+  "login_url": "/users/sign_in",
   "username": "",
   "password": ""
 }

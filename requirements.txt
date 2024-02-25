@@ -1,4 +1,5 @@
 pytest==7.4.4
+selenium==4.18.1
 selene==2.0.0rc8
 jsonpickle==3.0.2
 python-configuration==0.9.1

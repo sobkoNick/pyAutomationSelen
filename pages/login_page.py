@@ -2,6 +2,7 @@ from reportportal_client import step
 from selene import browser
 
 import utils.config_util
+from pages.home_page import HomePage
 from pages.ui_helper import *
 
 
@@ -27,5 +28,6 @@ class LoginPage:
         return self
 
     @step
-    def press_sign_in(self):
+    def press_sign_in(self) -> HomePage:
         self.sing_in_btn.click()
+        return HomePage()
