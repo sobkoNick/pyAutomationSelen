@@ -1,16 +1,16 @@
 from reportportal_client import step
 from selene import browser
+from selene.support import by
+from selene.support.shared.jquery_style import s
 
 import utils.config_util
-from pages.home_page import HomePage
-from pages.ui_helper import *
 
 
 class LoginPage:
     def __init__(self):
-        self.email_input = by_css('#content-desktop #user_email')
-        self.password_input = by_css('#content-desktop #user_password')
-        self.sing_in_btn = by_css('#content-desktop [type="submit"]')
+        self.email_input = s(by.css('#content-desktop #user_email'))
+        self.password_input = s(by.css('#content-desktop #user_password'))
+        self.sing_in_btn = s(by.css('#content-desktop [type="submit"]'))
 
     @step
     def open_login_page(self):
@@ -28,6 +28,6 @@ class LoginPage:
         return self
 
     @step
-    def press_sign_in(self) -> HomePage:
+    def press_sign_in(self):
         self.sing_in_btn.click()
-        return HomePage()
+        return self
