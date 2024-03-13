@@ -11,3 +11,8 @@ class HomePage:
     @step
     def signed_in_alert_has_text(self, expected_text):
         return self.signed_in_alert.should(have.text(expected_text))
+
+    @step
+    def open_project(self, project):
+        s(by.css(f'[title="{project}"]')).click()
+        return self
