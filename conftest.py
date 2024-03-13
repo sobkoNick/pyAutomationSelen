@@ -31,6 +31,20 @@ def app(request):
     return fixture
 
 
+@pytest.hookimpl(tryfirst=True, hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """
+    Attaches a screenshot on Report Portal on test failure
+    """
+    outcome = yield
+    rep = outcome.get_result()
+    if rep.when == 'call' and rep.failed:
+        fixture.logger.error(f"{rep.head_line} {rep.outcome}",
+                             attachment={"name": f"{rep.head_line}.png",
+                                         "data": browser.config.driver.get_screenshot_as_png(),
+                                         "mime": "image/png"})
+
+
 @step("Set up browser")
 def set_up_browser():
     browser.config.base_url = utils.config_util.get_config('base_url')
