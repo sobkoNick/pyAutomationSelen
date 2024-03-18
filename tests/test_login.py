@@ -7,10 +7,13 @@ from pages.login_page import LoginPage
 
 @fixture(scope="module")
 def credentials():
-    return (utils.config_util.get_config("username"), utils.config_util.get_config("password"))
+    return utils.config_util.get_config("username"), utils.config_util.get_config("password")
 
 
 def test_login_functionality(app, credentials):
+    """
+    Test performs login and verifies 'Signed in successfully' message is present
+    """
     LoginPage() \
         .open_login_page() \
         .fill_email(credentials[0]) \
