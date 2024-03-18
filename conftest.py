@@ -7,7 +7,10 @@ from selenium import webdriver
 
 import settings
 import utils.config_util
+from api_steps.login_api_client import LoginApiClient
+from constants import endpoint_names
 from fixture.application import Application
+from utils import config_util
 from utils.logger import CustomLogger
 
 
@@ -25,6 +28,10 @@ def app(request):
 
     fixture.env = request.config.getoption("--env")
     settings.ENV = copy(fixture.env)
+
+    fixture.token = request_and_verify_jwt(fixture.logger)
+    fixture.project_id = config_util.get_config("project_id")
+    fixture.project_name = config_util.get_config("project_name")
 
     set_up_browser()
 
@@ -53,3 +60,13 @@ def set_up_browser():
     options.add_argument("--start-maximized")
     # options.add_experimental_option("detach", True)
     browser.config.driver = webdriver.Chrome(options=options)
+
+
+@step("Sends request from fixture to get jwt token")
+def request_and_verify_jwt(logger):
+    jwt_response = LoginApiClient(endpoint_names.LOGIN_ENDPOINT, logger).get_jwt()
+    code = jwt_response.status_code
+    jwt_token = jwt_response.json()["jwt"]
+    if code != 200 or not jwt_token.strip():
+        pytest.skip(f"Unable to get JWT token. Status code - {code}, token - {jwt_token}")
+    return jwt_token
