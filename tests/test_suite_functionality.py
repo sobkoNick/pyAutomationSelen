@@ -25,10 +25,14 @@ def perform_login(app):
         .press_sign_in()
 
 
-@fixture
-def suite_name(app):
-    name = "selene_autotest_suite_1"
+suites = ['selene_autotest_suite_1', 'selene_autotest_suite_2']
 
+
+# Something like data provider. suites -> request.
+# 'suites' are used as parameter, but each list item is passed in request.param
+@fixture(params=suites)
+def suite_name(app, request):
+    name = request.param
     yield name
 
     app.logger.info('Deleting the created suite using API')
