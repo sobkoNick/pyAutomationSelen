@@ -75,6 +75,9 @@ def existing_suite(app):
 #   ---TESTS---
 
 def test_suite_creation(app, suite_name):
+    """
+    Test creates a new suite, opens it and verifies the name in a title field
+    """
     HomePage().open_project(app.project_name)
     ProjectPage() \
         .set_suite_name(suite_name) \
@@ -84,6 +87,9 @@ def test_suite_creation(app, suite_name):
 
 
 def test_suite_is_present_on_ui(app, existing_suite):
+    """
+    Test opens existing suite (created using API) and verifies the name in a title field
+    """
     HomePage().open_project(app.project_name)
     ProjectPage() \
         .choose_suite(existing_suite) \
