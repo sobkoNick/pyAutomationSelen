@@ -2,7 +2,7 @@ from reportportal_client import step
 from selene import browser, be
 from selene.support import by
 from selene.support.conditions import have
-from selene.support.shared.jquery_style import s
+from selene.support.shared.jquery_style import s, ss
 
 
 class ProjectPage:
@@ -61,7 +61,7 @@ class ProjectPage:
         self.switch_to_frame()
         # todo this does not work. requirements and test steps are not saved after click on Save.
         script = f"document.querySelector('[class=\"view-line\"]:nth-child(2) span span')" \
-                 f".textContent='{requirements_text}'"
+                 f".innerText='{requirements_text}'"
         browser.driver.execute_script(script)
 
         script2 = "document.querySelector('[class=\"view-line\"]:nth-child(2) span span')" \
@@ -93,4 +93,21 @@ class ProjectPage:
     @step
     def save_test(self):
         self.save_test_btn.click()
+        return self
+
+    @step
+    def select_test(self, test_title):
+        s(by.xpath(f"//div[@class='collection']//a[text()='{test_title}']")).click()
+        return self
+
+    @step
+    def verify_requirements(self, requirements):
+        ss(by.xpath('(//h3[@id="requirements"]/following-sibling::ol)[1]//li')) \
+            .should(have.exact_texts(requirements))
+        return self
+
+    @step
+    def verify_steps(self, steps):
+        ss(by.xpath('(//h3[@id="steps"]/following-sibling::ol)[1]//li')) \
+            .should(have.exact_texts(steps))
         return self
