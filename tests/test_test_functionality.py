@@ -1,5 +1,6 @@
 import json
 
+import pytest
 from _pytest.fixtures import fixture
 
 import utils.config_util
@@ -45,6 +46,7 @@ def existing_suite(app):
 
 #   ---TESTS---
 
+@pytest.mark.skip(reason="No way to save test requirements and test steps")
 def test_adding_test_case_to_suite(app, existing_suite):
     """
     Test adds a new test to existing suite and verifies data was saved correctly

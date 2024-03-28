@@ -1,5 +1,5 @@
 from reportportal_client import step
-from selene import browser
+from selene import browser, be
 from selene.support import by
 from selene.support.conditions import have
 from selene.support.shared.jquery_style import s
@@ -58,32 +58,37 @@ class ProjectPage:
 
     @step
     def set_test_requirements(self, requirements_text):
-        # todo maybe it should set values from requirements_text like it's a list.
-        # browser.execute_script("document.querySelector('[class=\"view-line\"] span span').setAttribute('value', 'your value here')")
-
-        # this works ->
-        # browser.execute_script("document.querySelector('[class=\"view-line\"]:nth-child(2) span span').textContent='newtext'")
-
-        # todo add check if frame is already selected
-        browser.switch_to.frame(1)
+        self.switch_to_frame()
+        # todo this does not work. requirements and test steps are not saved after click on Save.
         script = f"document.querySelector('[class=\"view-line\"]:nth-child(2) span span')" \
                  f".textContent='{requirements_text}'"
         browser.driver.execute_script(script)
+
+        script2 = "document.querySelector('[class=\"view-line\"]:nth-child(2) span span')" \
+                  ".setAttribute('class', 'mtk1')"
+        browser.driver.execute_script(script2)
         # self.requirements_input.set(requirements_text)
+        browser.switch_to.default_content()
         return self
 
     @step
     def set_test_steps(self, steps_text):
-        # todo and here also. check while testing
-
-        # todo add check if frame is already selected
+        self.switch_to_frame()
         script = f"document.querySelector('[class=\"view-line\"]:nth-child(4) span span')" \
                  f".textContent='{steps_text}'"
         browser.driver.execute_script(script)
 
+        script2 = "document.querySelector('[class=\"view-line\"]:nth-child(4) span span')" \
+                  ".setAttribute('class', 'mtk1')"
+        browser.driver.execute_script(script2)
+
         # self.steps_input.set(steps_text)
-        # browser.switch_to.default_content()
+        browser.switch_to.default_content()
         return self
+
+    def switch_to_frame(self):
+        s(by.css('iframe:nth-child(1)')).should(be.visible)
+        browser.switch_to.frame(1)
 
     @step
     def save_test(self):
