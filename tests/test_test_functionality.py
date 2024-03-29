@@ -1,6 +1,7 @@
 import json
 import re
 
+import pytest
 from _pytest.fixtures import fixture
 
 import utils.config_util
@@ -60,7 +61,6 @@ def existing_test(app):
     test = ApiClient(token=app.token, endpoint=TESTS_ENDPOINT, logger=app.logger) \
         .post(url_params=[app.project_id], new_obj=test_data) \
         .validate_that().status_code_is_ok().get_response_body()
-    # suite = Suite.build(json.dumps(suite['data']))
 
     test_name = test['data']['attributes']['title']
     description = test['data']['attributes']['description']
@@ -68,7 +68,7 @@ def existing_test(app):
     steps = re.split(r'\n\d.\s', re.split('Steps', description)[1])
     steps.remove('')
 
-    # passes suite name
+    # passes test arguments
     yield suite['data']['attributes']['title'], test_name, requirements, steps
 
     app.logger.info("Deleting existing suite after test run")
@@ -78,7 +78,7 @@ def existing_test(app):
 
 #   ---TESTS---
 
-# @pytest.mark.skip(reason="No way to save test requirements and test steps")
+@pytest.mark.skip(reason="No way to save test requirements and test steps")
 def test_adding_test_case_to_suite(app, existing_suite):
     """
     Test adds a new test to existing suite and verifies data was saved correctly

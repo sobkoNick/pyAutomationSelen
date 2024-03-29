@@ -41,8 +41,8 @@ def set_up_and_quit_browser():
     """
     Sets up a browser -> test execution happens (yield) -> quits browser. It's done for each test
     """
-    # todo should Login be only once (and all tests within the same session using the sam browser)
-    #  or new browser window for each test and login each time???
+    # todo should Login be only once (and all tests within the same session using the same browser)
+    #  or new browser window for each test and login each time?
     set_up_browser()
     yield
     browser.quit()
