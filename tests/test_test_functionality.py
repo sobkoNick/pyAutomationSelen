@@ -19,11 +19,7 @@ def perform_login(app):
     """
     Test precondition to perform login
     """
-    LoginPage() \
-        .open_login_page() \
-        .fill_email(utils.config_util.get_config("username")) \
-        .fill_password(utils.config_util.get_config("password")) \
-        .press_sign_in()
+    LoginPage().login(utils.config_util.get_config("username"), utils.config_util.get_config("password"))
 
 
 @fixture

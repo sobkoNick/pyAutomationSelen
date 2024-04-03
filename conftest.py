@@ -10,6 +10,8 @@ import utils.config_util
 from api_steps.login_api_client import LoginApiClient
 from constants import endpoint_names
 from fixture.application import Application
+from pages.home_page import HomePage
+from pages.project_page import ProjectPage
 from utils import config_util
 from utils.logger import CustomLogger
 
@@ -33,19 +35,21 @@ def app(request):
     fixture.project_id = config_util.get_config("project_id")
     fixture.project_name = config_util.get_config("project_name")
 
-    return fixture
+    set_up_browser()
+
+    yield fixture
+
+    browser.quit()
 
 
 @pytest.fixture(autouse=True)
-def set_up_and_quit_browser():
-    """
-    Sets up a browser -> test execution happens (yield) -> quits browser. It's done for each test
-    """
-    # todo should Login be only once (and all tests within the same session using the same browser)
-    #  or new browser window for each test and login each time?
-    set_up_browser()
+def logout_after_test():
     yield
-    browser.quit()
+    project_page = ProjectPage()
+    if project_page.is_account_btn_visible():
+        project_page.click_on_account_btn()
+    HomePage().click_on_user_menu().click_to_sign_out()
+    browser.driver.delete_all_cookies()
 
 
 @pytest.hookimpl(tryfirst=True, hookwrapper=True)

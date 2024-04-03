@@ -7,6 +7,7 @@ from selene.support.shared.jquery_style import s, ss
 
 class ProjectPage:
     def __init__(self):
+        self.account_btn = s(by.css('[class="mainnav-menu-footer"] a[href="/account"]'))
         self.first_suite_input = s(by.css('input[placeholder="First Suite"]'))
         self.add_suite_btn = s(by.xpath('//button[text()="Suite"]'))
         self.suite_item = '//p[@class="nestedItem-title"]//span[text()="{suite_name}"]'
@@ -20,6 +21,15 @@ class ProjectPage:
         self.save_test_btn = s(by.xpath('//div[@class="detail-view-actions"]//button'))
         self.requirements_input = s(by.xpath('//*[@class="view-line"][2]'))
         self.steps_input = s(by.xpath('//*[@class="view-line"][4]'))
+
+    @step
+    def is_account_btn_visible(self) -> bool:
+        return self.account_btn.matching(be.visible)
+
+    @step
+    def click_on_account_btn(self):
+        self.account_btn.click()
+        return self
 
     @step
     def set_suite_name(self, name):

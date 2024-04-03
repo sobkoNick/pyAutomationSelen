@@ -13,6 +13,14 @@ class LoginPage:
         self.sing_in_btn = s(by.css('#content-desktop [type="submit"]'))
 
     @step
+    def login(self, email, password):
+        self.open_login_page()
+        self.fill_email(email)
+        self.fill_password(password)
+        self.press_sign_in()
+        return self
+
+    @step
     def open_login_page(self):
         browser.open(utils.config_util.get_config('login_url'))
         return self
