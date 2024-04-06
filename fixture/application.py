@@ -1,6 +1,8 @@
+from models.common_test_data import CommonTestData
+
+
 class Application:
     def __init__(self):
         self.logger = None
         self.env = ""
-        self.project_id = ""
-        self.project_name = ""
+        self.test_data: CommonTestData = None

@@ -3,7 +3,6 @@ import json
 import pystreamapi
 from _pytest.fixtures import fixture
 
-import utils.config_util
 from api_steps.api_client import ApiClient
 from constants.endpoint_names import SUITES_ENDPOINT
 from pages.home_page import HomePage
@@ -18,7 +17,7 @@ def perform_login(app):
     """
     Test precondition to perform login
     """
-    LoginPage().login(utils.config_util.get_config("username"), utils.config_util.get_config("password"))
+    LoginPage().login(app.test_data.user_credentials.username, app.test_data.user_credentials.password)
 
 
 suites = ['selene_autotest_suite_1', 'selene_autotest_suite_2']
@@ -32,8 +31,8 @@ def suite_name(app, request):
     yield name
 
     app.logger.info('Deleting the created suite using API')
-    all_suites = ApiClient(token=app.token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
-        .get([app.project_id]) \
+    all_suites = ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
+        .get([app.test_data.project_id]) \
         .validate_that() \
         .status_code_is_ok() \
         .get_response_body()
@@ -43,8 +42,8 @@ def suite_name(app, request):
         .find_first()
 
     if found_suite.is_present():
-        ApiClient(token=app.token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
-            .delete([app.project_id, found_suite.get()['id']]) \
+        ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
+            .delete([app.test_data.project_id, found_suite.get()['id']]) \
             .validate_that() \
             .status_code_is_ok()
 
@@ -55,8 +54,8 @@ def existing_suite(app):
         data = json.load(json_data)
 
     # creates default suite for tests
-    suite = ApiClient(token=app.token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
-        .post(url_params=[app.project_id], new_obj=data) \
+    suite = ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
+        .post(url_params=[app.test_data.project_id], new_obj=data) \
         .validate_that().status_code_is_ok().get_response_body()
     # suite = Suite.build(json.dumps(suite['data']))
 
@@ -64,8 +63,8 @@ def existing_suite(app):
     yield suite['data']['attributes']['title']
 
     app.logger.info("Deleting existing suite after test run")
-    ApiClient(token=app.token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
-        .delete(url_params=[app.project_id, suite['data']['id']]).validate_that()
+    ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
+        .delete(url_params=[app.test_data.project_id, suite['data']['id']]).validate_that()
 
 
 #   ---TESTS---
@@ -74,7 +73,7 @@ def test_suite_creation(app, suite_name):
     """
     Test creates a new suite, opens it and verifies the name in a title field
     """
-    HomePage().open_project(app.project_name)
+    HomePage().open_project(app.test_data.project_name)
     ProjectPage() \
         .set_suite_name(suite_name) \
         .click_to_add_suite() \
@@ -86,7 +85,7 @@ def test_suite_is_present_on_ui(app, existing_suite):
     """
     Test opens existing suite (created using API) and verifies the name in a title field
     """
-    HomePage().open_project(app.project_name)
+    HomePage().open_project(app.test_data.project_name)
     ProjectPage() \
         .choose_suite(existing_suite) \
         .verify_opened_suite_title(existing_suite)

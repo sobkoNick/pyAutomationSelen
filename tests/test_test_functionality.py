@@ -4,7 +4,6 @@ import re
 import pytest
 from _pytest.fixtures import fixture
 
-import utils.config_util
 from api_steps.api_client import ApiClient
 from constants.endpoint_names import SUITES_ENDPOINT, TESTS_ENDPOINT
 from pages.home_page import HomePage
@@ -19,7 +18,7 @@ def perform_login(app):
     """
     Test precondition to perform login
     """
-    LoginPage().login(utils.config_util.get_config("username"), utils.config_util.get_config("password"))
+    LoginPage().login(app.test_data.user_credentials.username, app.test_data.user_credentials.password)
 
 
 @fixture
@@ -28,8 +27,8 @@ def existing_suite(app):
         data = json.load(json_data)
 
     # creates default suite for tests
-    suite = ApiClient(token=app.token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
-        .post(url_params=[app.project_id], new_obj=data) \
+    suite = ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
+        .post(url_params=[app.test_data.project_id], new_obj=data) \
         .validate_that().status_code_is_ok().get_response_body()
     # suite = Suite.build(json.dumps(suite['data']))
 
@@ -37,8 +36,8 @@ def existing_suite(app):
     yield suite['data']['attributes']['title']
 
     app.logger.info("Deleting existing suite after test run")
-    ApiClient(token=app.token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
-        .delete(url_params=[app.project_id, suite['data']['id']]).validate_that()
+    ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
+        .delete(url_params=[app.test_data.project_id, suite['data']['id']]).validate_that()
 
 
 @fixture
@@ -49,13 +48,13 @@ def existing_test(app):
         test_data = json.load(json_data)
 
     # creates default suite for tests
-    suite = ApiClient(token=app.token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
-        .post(url_params=[app.project_id], new_obj=suite_data) \
+    suite = ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
+        .post(url_params=[app.test_data.project_id], new_obj=suite_data) \
         .validate_that().status_code_is_ok().get_response_body()
     test_data['data']['attributes']['suite_id'] = suite['data']['id']
     # creates default test in suite
-    test = ApiClient(token=app.token, endpoint=TESTS_ENDPOINT, logger=app.logger) \
-        .post(url_params=[app.project_id], new_obj=test_data) \
+    test = ApiClient(token=app.test_data.jwt_token, endpoint=TESTS_ENDPOINT, logger=app.logger) \
+        .post(url_params=[app.test_data.project_id], new_obj=test_data) \
         .validate_that().status_code_is_ok().get_response_body()
 
     test_name = test['data']['attributes']['title']
@@ -68,8 +67,8 @@ def existing_test(app):
     yield suite['data']['attributes']['title'], test_name, requirements, steps
 
     app.logger.info("Deleting existing suite after test run")
-    ApiClient(token=app.token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
-        .delete(url_params=[app.project_id, suite['data']['id']]).validate_that()
+    ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
+        .delete(url_params=[app.test_data.project_id, suite['data']['id']]).validate_that()
 
 
 #   ---TESTS---
@@ -79,7 +78,7 @@ def test_adding_test_case_to_suite(app, existing_suite):
     """
     Test adds a new test to existing suite and verifies data was saved correctly
     """
-    HomePage().open_project(app.project_name)
+    HomePage().open_project(app.test_data.project_name)
     ProjectPage() \
         .choose_suite(existing_suite) \
         .choose_file_suite_type() \
@@ -94,7 +93,7 @@ def test_opening_existing_test(app, existing_test):
     """
     Test opening existing test and verifying fields
     """
-    HomePage().open_project(app.project_name)
+    HomePage().open_project(app.test_data.project_name)
     ProjectPage() \
         .choose_suite(existing_test[0]) \
         .choose_file_suite_type() \

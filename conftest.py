@@ -1,3 +1,5 @@
+import json
+import os
 from copy import copy
 
 import pytest
@@ -10,9 +12,9 @@ import utils.config_util
 from api_steps.login_api_client import LoginApiClient
 from constants import endpoint_names
 from fixture.application import Application
+from models.common_test_data import CommonTestData
 from pages.home_page import HomePage
 from pages.project_page import ProjectPage
-from utils import config_util
 from utils.logger import CustomLogger
 
 
@@ -30,10 +32,7 @@ def app(request):
 
     fixture.env = request.config.getoption("--env")
     settings.ENV = copy(fixture.env)
-
-    fixture.token = request_and_verify_jwt(fixture.logger)
-    fixture.project_id = config_util.get_config("project_id")
-    fixture.project_name = config_util.get_config("project_name")
+    fixture.test_data = load_test_data(fixture.logger)
 
     set_up_browser()
 
@@ -76,9 +75,20 @@ def set_up_browser():
     browser.config.driver = webdriver.Chrome(options=options)
 
 
+@step("Loads test data from file and gets jwt token")
+def load_test_data(logger) -> CommonTestData:
+    file_path = os.path.join(settings.PROJECT_ROOT, "config/{}_config.json".format(settings.ENV))
+    with open(file_path, 'r') as json_data:
+        test_data_as_json = json.loads(json_data.read())
+        jwt_token = request_and_verify_jwt(logger, test_data_as_json["api_token_to_get_jwt"])
+        test_data_as_json["jwt_token"] = jwt_token
+        del test_data_as_json["api_token_to_get_jwt"]
+        return CommonTestData(**test_data_as_json)
+
+
 @step("Sends request from fixture to get jwt token")
-def request_and_verify_jwt(logger):
-    jwt_response = LoginApiClient(endpoint_names.LOGIN_ENDPOINT, logger).get_jwt()
+def request_and_verify_jwt(logger, api_token_to_get_jwt):
+    jwt_response = LoginApiClient(endpoint_names.LOGIN_ENDPOINT, logger, api_token_to_get_jwt).get_jwt()
     code = jwt_response.status_code
     jwt_token = jwt_response.json()["jwt"]
     if code != 200 or not jwt_token.strip():
