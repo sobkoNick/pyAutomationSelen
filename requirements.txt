@@ -12,6 +12,7 @@ requests==2.31.0
 requests-to-curl==1.1.0
 
 # OTHER
+pydantic==2.6.4
 jsonpickle==3.0.2
 python-configuration==0.9.1
 assertpy==1.1

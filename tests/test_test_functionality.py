@@ -6,6 +6,7 @@ from _pytest.fixtures import fixture
 
 from api_steps.api_client import ApiClient
 from constants.endpoint_names import SUITES_ENDPOINT, TESTS_ENDPOINT
+from models.suite_model import Suite
 from pages.home_page import HomePage
 from pages.login_page import LoginPage
 from pages.project_page import ProjectPage
@@ -22,22 +23,21 @@ def perform_login(app):
 
 
 @fixture
-def existing_suite(app):
+def existing_suite_for_test(app):
     with open("tests/test_data/existing_suite.json") as json_data:
         data = json.load(json_data)
 
     # creates default suite for tests
     suite = ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
         .post(url_params=[app.test_data.project_id], new_obj=data) \
-        .validate_that().status_code_is_ok().get_response_body()
-    # suite = Suite.build(json.dumps(suite['data']))
+        .validate_that().status_code_is_ok().get_response_as(Suite)
 
     # passes suite name
-    yield suite['data']['attributes']['title']
+    yield suite.attributes.title
 
     app.logger.info("Deleting existing suite after test run")
     ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
-        .delete(url_params=[app.test_data.project_id, suite['data']['id']]).validate_that()
+        .delete(url_params=[app.test_data.project_id, suite.id]).validate_that()
 
 
 @fixture
@@ -74,13 +74,13 @@ def existing_test(app):
 #   ---TESTS---
 
 @pytest.mark.skip(reason="No way to save test requirements and test steps")
-def test_adding_test_case_to_suite(app, existing_suite):
+def test_adding_test_case_to_suite(app, existing_suite_for_test):
     """
     Test adds a new test to existing suite and verifies data was saved correctly
     """
     HomePage().open_project(app.test_data.project_name)
     ProjectPage() \
-        .choose_suite(existing_suite) \
+        .choose_suite(existing_suite_for_test) \
         .choose_file_suite_type() \
         .click_to_add_new_test() \
         .set_test_name("created by autotest") \

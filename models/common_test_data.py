@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 
+# another approach how to serialize json to obj, but better use pydantic (suite_model.py)
 @dataclass(frozen=True)
 class Credentials:
     username: str

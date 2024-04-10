@@ -24,31 +24,17 @@ class Validator:
             .is_equal_to(status_code)
         return self
 
-    @step
-    def body_contains(self, expected_obj):
-        """
-        Verifies response body with list of items contains expected_obj
-        :param expected_obj: class must have static method 'build' to build actual response obj
-        """
-        actual_objs = []
-        for obj in self.get_response_body()['data']:
-            # here I get class from expected_obj and call its method build()
-            actual_objs.append(expected_obj.__class__.build(json.dumps(obj)))
-        assert_that(actual_objs, f"Response \n{actual_objs} \n does not contain expected \n{expected_obj}\n") \
-            .is_not_empty().contains(expected_obj)
-        return self
-
-    @step
-    def body_equals(self, expected_obj):
-        """
-        Verifies response body equals expected_obj
-        :param expected_obj: class must have static method 'build' to build actual response obj
-        """
-        # here I get class from expected_obj and call its method build()
-        actual_obj = expected_obj.__class__.build(json.dumps(self.get_response_body()['data']))
-        assert_that(actual_obj, f"Response \n{actual_obj} \n does not equal expected \n{expected_obj}\n") \
-            .is_equal_to(expected_obj)
-        return self
-
     def get_response_body(self):
         return self.response.json()
+
+    def get_response_as(self, clazz):
+        return clazz(**self.response.json()['data'])
+
+    def get_response_as_list_of(self, clazz):
+        actual_objs = []
+        for obj in self.get_response_body()['data']:
+            # json.dumps(obj)
+            # here I get class from expected_obj and call its method build()
+            actual_objs.append(clazz(obj))
+        return actual_objs
+

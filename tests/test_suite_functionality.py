@@ -5,6 +5,7 @@ from _pytest.fixtures import fixture
 
 from api_steps.api_client import ApiClient
 from constants.endpoint_names import SUITES_ENDPOINT
+from models.suite_model import Suite
 from pages.home_page import HomePage
 from pages.login_page import LoginPage
 from pages.project_page import ProjectPage
@@ -56,15 +57,14 @@ def existing_suite(app):
     # creates default suite for tests
     suite = ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
         .post(url_params=[app.test_data.project_id], new_obj=data) \
-        .validate_that().status_code_is_ok().get_response_body()
-    # suite = Suite.build(json.dumps(suite['data']))
+        .validate_that().status_code_is_ok().get_response_as(Suite)
 
     # passes suite name
-    yield suite['data']['attributes']['title']
+    yield suite.attributes.title
 
     app.logger.info("Deleting existing suite after test run")
     ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
-        .delete(url_params=[app.test_data.project_id, suite['data']['id']]).validate_that()
+        .delete(url_params=[app.test_data.project_id, suite.id]).validate_that()
 
 
 #   ---TESTS---
