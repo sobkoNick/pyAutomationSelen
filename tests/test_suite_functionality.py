@@ -36,15 +36,15 @@ def suite_name(app, request):
         .get([app.test_data.project_id]) \
         .validate_that() \
         .status_code_is_ok() \
-        .get_response_body()
+        .get_response_as_list_of(Suite)
 
-    found_suite = pystreamapi.Stream.of(all_suites['data']) \
-        .filter(lambda suite: suite['attributes']['title'] == name) \
+    found_suite = pystreamapi.Stream.of(all_suites) \
+        .filter(lambda suite: suite.attributes.title == name) \
         .find_first()
 
     if found_suite.is_present():
         ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
-            .delete([app.test_data.project_id, found_suite.get()['id']]) \
+            .delete([app.test_data.project_id, found_suite.get().id]) \
             .validate_that() \
             .status_code_is_ok()
 

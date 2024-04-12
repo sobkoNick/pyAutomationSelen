@@ -35,6 +35,6 @@ class Validator:
         for obj in self.get_response_body()['data']:
             # json.dumps(obj)
             # here I get class from expected_obj and call its method build()
-            actual_objs.append(clazz(obj))
+            actual_objs.append(clazz(**obj))
         return actual_objs
 
