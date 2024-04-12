@@ -1,21 +1,14 @@
-from dataclasses import dataclass, field
+from pydantic.v1 import BaseModel
 
 
-# todo use pydantic
-@dataclass(init=False, repr=True, eq=True)
-class TestAttributes:
+class TestAttributes(BaseModel):
     title: str
-    suite_id: str = field(default=None)
+    suite_id: str = None
     # the value is not present when we get all suites.
-    description: str = field(default="")
+    description: str = None
 
 
-@dataclass(init=False, repr=True, eq=True)
-class Test:
+class Test(BaseModel):
     type: str
     attributes: TestAttributes
-    id: str = field(default=None)
-
-    # need to add this otherwise user_credentials will be a dict
-    def __post_init__(self):
-        self.attributes = TestAttributes(**self.attributes)
+    id: str = None

@@ -7,6 +7,7 @@ from _pytest.fixtures import fixture
 from api_steps.api_client import ApiClient
 from constants.endpoint_names import SUITES_ENDPOINT, TESTS_ENDPOINT
 from models.suite_model import Suite
+from models.test_model import Test
 from pages.home_page import HomePage
 from pages.login_page import LoginPage
 from pages.project_page import ProjectPage
@@ -50,25 +51,29 @@ def existing_test(app):
     # creates default suite for tests
     suite = ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
         .post(url_params=[app.test_data.project_id], new_obj=suite_data) \
-        .validate_that().status_code_is_ok().get_response_body()
-    test_data['data']['attributes']['suite_id'] = suite['data']['id']
-    # creates default test in suite
-    test = ApiClient(token=app.test_data.jwt_token, endpoint=TESTS_ENDPOINT, logger=app.logger) \
-        .post(url_params=[app.test_data.project_id], new_obj=test_data) \
-        .validate_that().status_code_is_ok().get_response_body()
+        .validate_that().status_code_is_ok().get_response_as(Suite)
 
-    test_name = test['data']['attributes']['title']
-    description = test['data']['attributes']['description']
+    test_data_obj = Test(**test_data['data'])
+    test_data_obj.attributes.suite_id = suite.id
+
+    # test_data['data']['attributes']['suite_id'] = suite.attributes.id
+    # creates default test in suite
+    created_test = ApiClient(token=app.test_data.jwt_token, endpoint=TESTS_ENDPOINT, logger=app.logger) \
+        .post(url_params=[app.test_data.project_id], new_obj=test_data_obj) \
+        .validate_that().status_code_is_ok().get_response_as(Test)
+
+    test_name = created_test.attributes.title
+    description = created_test.attributes.description
     requirements = re.findall(r'\d+\.\s(.*?)\n', re.split('Steps', description)[0])
     steps = re.split(r'\n\d.\s', re.split('Steps', description)[1])
     steps.remove('')
 
     # passes test arguments
-    yield suite['data']['attributes']['title'], test_name, requirements, steps
+    yield suite.attributes.title, test_name, requirements, steps
 
     app.logger.info("Deleting existing suite after test run")
     ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
-        .delete(url_params=[app.test_data.project_id, suite['data']['id']]).validate_that()
+        .delete(url_params=[app.test_data.project_id, suite.id]).validate_that()
 
 
 #   ---TESTS---

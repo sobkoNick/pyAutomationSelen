@@ -1,3 +1,5 @@
+from copy import copy
+
 import curl
 import requests
 from reportportal_client import step
@@ -73,7 +75,12 @@ class ApiClient:
         headers = self.get_headers()
         url = self.post_url.format(*url_params)
 
-        self.response = requests.post(url=url, json=new_obj, headers=headers)
+        if type(new_obj) is dict:
+            data_to_post = copy(new_obj)
+        else:
+            data_to_post = {'data': new_obj.dict()}
+
+        self.response = requests.post(url=url, json=data_to_post, headers=headers)
         self.log_request_and_response()
         return self
 
