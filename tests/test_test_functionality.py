@@ -20,47 +20,50 @@ def perform_login(app):
     """
     Test precondition to perform login
     """
-    LoginPage().login(app.test_data.user_credentials.username, app.test_data.user_credentials.password)
+    LoginPage().login(app.test_data.login_url, app.test_data.user_credentials)
 
 
 @fixture
 def existing_suite_for_test(app):
     with open("tests/test_data/existing_suite.json") as json_data:
-        data = json.load(json_data)
+        suite_data_to_post = json.load(json_data)
 
     # creates default suite for tests
-    suite = ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
-        .post(url_params=[app.test_data.project_id], new_obj=data) \
-        .validate_that().status_code_is_ok().get_response_as(Suite)
+    created_suite = ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
+        .post(url_params=[app.test_data.project_id], new_obj=suite_data_to_post) \
+        .validate_that().status_code_is_ok() \
+        .get_response_as(Suite)
 
     # passes suite name
-    yield suite.attributes.title
+    yield created_suite.attributes.title
 
     app.logger.info("Deleting existing suite after test run")
     ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
-        .delete(url_params=[app.test_data.project_id, suite.id]).validate_that()
+        .delete(url_params=[app.test_data.project_id, created_suite.id]) \
+        .validate_that().status_code_is_ok()
 
 
 @fixture
 def existing_test(app):
     with open("tests/test_data/existing_suite.json") as json_data:
-        suite_data = json.load(json_data)
+        suite_data_to_post = json.load(json_data)
     with open("tests/test_data/existing_test.json") as json_data:
-        test_data = json.load(json_data)
+        test_data_to_post = json.load(json_data)
 
     # creates default suite for tests
-    suite = ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
-        .post(url_params=[app.test_data.project_id], new_obj=suite_data) \
-        .validate_that().status_code_is_ok().get_response_as(Suite)
+    created_suite = ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
+        .post(url_params=[app.test_data.project_id], new_obj=suite_data_to_post) \
+        .validate_that().status_code_is_ok() \
+        .get_response_as(Suite)
 
-    test_data_obj = Test(**test_data['data'])
-    test_data_obj.attributes.suite_id = suite.id
+    test_data_obj = Test(**test_data_to_post['data'])
+    test_data_obj.attributes.suite_id = created_suite.id
 
-    # test_data['data']['attributes']['suite_id'] = suite.attributes.id
     # creates default test in suite
     created_test = ApiClient(token=app.test_data.jwt_token, endpoint=TESTS_ENDPOINT, logger=app.logger) \
         .post(url_params=[app.test_data.project_id], new_obj=test_data_obj) \
-        .validate_that().status_code_is_ok().get_response_as(Test)
+        .validate_that().status_code_is_ok() \
+        .get_response_as(Test)
 
     test_name = created_test.attributes.title
     description = created_test.attributes.description
@@ -69,11 +72,12 @@ def existing_test(app):
     steps.remove('')
 
     # passes test arguments
-    yield suite.attributes.title, test_name, requirements, steps
+    yield created_suite.attributes.title, test_name, requirements, steps
 
     app.logger.info("Deleting existing suite after test run")
     ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
-        .delete(url_params=[app.test_data.project_id, suite.id]).validate_that()
+        .delete(url_params=[app.test_data.project_id, created_suite.id]) \
+        .validate_that().status_code_is_ok()
 
 
 #   ---TESTS---

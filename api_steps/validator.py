@@ -33,8 +33,6 @@ class Validator:
     def get_response_as_list_of(self, clazz):
         actual_objs = []
         for obj in self.get_response_body()['data']:
-            # json.dumps(obj)
-            # here I get class from expected_obj and call its method build()
             actual_objs.append(clazz(**obj))
         return actual_objs
 

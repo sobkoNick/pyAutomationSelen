@@ -8,7 +8,6 @@ from selene import browser
 from selenium import webdriver
 
 import settings
-import utils.config_util
 from api_steps.login_api_client import LoginApiClient
 from constants import endpoint_names
 from fixture.application import Application
@@ -34,7 +33,7 @@ def app(request):
     settings.ENV = copy(fixture.env)
     fixture.test_data = load_test_data(fixture.logger)
 
-    set_up_browser()
+    set_up_browser(fixture.test_data)
 
     yield fixture
 
@@ -66,8 +65,8 @@ def pytest_runtest_makereport(item, call):
 
 
 @step("Set up browser")
-def set_up_browser():
-    browser.config.base_url = utils.config_util.get_config('base_url')
+def set_up_browser(test_data):
+    browser.config.base_url = test_data.base_url
 
     options = webdriver.ChromeOptions()
     options.add_argument("--start-maximized")

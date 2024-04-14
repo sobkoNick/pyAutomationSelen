@@ -7,10 +7,8 @@ from reportportal_client import step
 from api_steps.validator import Validator
 from utils import url_maker
 
-# Base class for all API steps classes
-EMPTY_STR = ""
 
-
+# Base class for all API steps classes. These methods can be used directly from tests.
 class ApiClient:
     def __init__(self, token="", endpoint="", logger=None):
         self.token = token
@@ -94,7 +92,12 @@ class ApiClient:
         headers = self.get_headers()
         url = self.put_url.format(*url_params)
 
-        self.response = requests.put(url=url, json=obj, headers=headers)
+        if type(obj) is dict:
+            data_to_put = copy(obj)
+        else:
+            data_to_put = {'data': obj.dict()}
+
+        self.response = requests.put(url=url, json=data_to_put, headers=headers)
         self.log_request_and_response()
         return self
 
@@ -113,6 +116,15 @@ class ApiClient:
 
     def get_response_body(self):
         return self.response.json()
+
+    def get_response_as(self, clazz):
+        return clazz(**self.response.json()['data'])
+
+    def get_response_as_list_of(self, clazz):
+        actual_objs = []
+        for obj in self.get_response_body()['data']:
+            actual_objs.append(clazz(**obj))
+        return actual_objs
 
     # used curl instead in the method below
     # def log_request(self, method, headers, url, body):

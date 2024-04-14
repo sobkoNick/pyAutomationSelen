@@ -18,7 +18,7 @@ def perform_login(app):
     """
     Test precondition to perform login
     """
-    LoginPage().login(app.test_data.user_credentials.username, app.test_data.user_credentials.password)
+    LoginPage().login(app.test_data.login_url, app.test_data.user_credentials)
 
 
 suites = ['selene_autotest_suite_1', 'selene_autotest_suite_2']
@@ -45,26 +45,26 @@ def suite_name(app, request):
     if found_suite.is_present():
         ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
             .delete([app.test_data.project_id, found_suite.get().id]) \
-            .validate_that() \
-            .status_code_is_ok()
+            .validate_that().status_code_is_ok()
 
 
 @fixture
 def existing_suite(app):
     with open("tests/test_data/existing_suite.json") as json_data:
-        data = json.load(json_data)
+        suite_data_to_post = json.load(json_data)
 
     # creates default suite for tests
-    suite = ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
-        .post(url_params=[app.test_data.project_id], new_obj=data) \
+    created_suite = ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
+        .post(url_params=[app.test_data.project_id], new_obj=suite_data_to_post) \
         .validate_that().status_code_is_ok().get_response_as(Suite)
 
     # passes suite name
-    yield suite.attributes.title
+    yield created_suite.attributes.title
 
     app.logger.info("Deleting existing suite after test run")
     ApiClient(token=app.test_data.jwt_token, endpoint=SUITES_ENDPOINT, logger=app.logger) \
-        .delete(url_params=[app.test_data.project_id, suite.id]).validate_that()
+        .delete(url_params=[app.test_data.project_id, created_suite.id]) \
+        .validate_that().status_code_is_ok()
 
 
 #   ---TESTS---

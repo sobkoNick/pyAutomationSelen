@@ -13,14 +13,15 @@ class ProjectPage:
         self.suite_item = '//p[@class="nestedItem-title"]//span[text()="{suite_name}"]'
         self.opened_suite_title = s(by.css('[class="detailed-view-suite-body"] h3'))
         # Test fragment locators
-        # todo create a fragment for this?
-        self.test_data_frame = s(by.css('[class="frame-container"] iframe'))
+        self.test_data_frame = s(by.css('iframe:nth-child(1)'))
         self.file_suite_type = s(by.css('li[role="radio"]'))
         self.add_new_test_btn = s(by.xpath('//a[contains(@href, "/new-test")]'))
         self.test_name_input = s(by.css('[placeholder="Title"]'))
         self.save_test_btn = s(by.xpath('//div[@class="detail-view-actions"]//button'))
         self.requirements_input = s(by.xpath('//*[@class="view-line"][2]'))
         self.steps_input = s(by.xpath('//*[@class="view-line"][4]'))
+        self.test_steps = ss(by.xpath('(//h3[@id="steps"]/following-sibling::ol)[1]//li'))
+        self.test_requirements = ss(by.xpath('(//h3[@id="requirements"]/following-sibling::ol)[1]//li'))
 
     @step
     def is_account_btn_visible(self) -> bool:
@@ -97,7 +98,7 @@ class ProjectPage:
         return self
 
     def switch_to_frame(self):
-        s(by.css('iframe:nth-child(1)')).should(be.visible)
+        self.test_data_frame.should(be.visible)
         browser.switch_to.frame(1)
 
     @step
@@ -112,12 +113,10 @@ class ProjectPage:
 
     @step
     def verify_requirements(self, requirements):
-        ss(by.xpath('(//h3[@id="requirements"]/following-sibling::ol)[1]//li')) \
-            .should(have.exact_texts(requirements))
+        self.test_requirements.should(have.exact_texts(requirements))
         return self
 
     @step
     def verify_steps(self, steps):
-        ss(by.xpath('(//h3[@id="steps"]/following-sibling::ol)[1]//li')) \
-            .should(have.exact_texts(steps))
+        self.test_steps.should(have.exact_texts(steps))
         return self
